@@ -4,11 +4,16 @@ using UnityEngine;
 public class BadmintonCourtCreator : MonoBehaviour
 {
     // ³¡µØ³ß´ç
-    float courtLength = 13.4f;
-    float courtWidth = 6.1f;
+    public GameManager gameManager;
+    public float courtLength;
+    public float courtWidth;
+    public float netHeight;
 
     void Start()
     {
+        courtWidth = gameManager.courtWidth;
+        courtLength = gameManager.courtLength;
+        netHeight = gameManager.netHeight;
         CreateCourt();
         CreateLines();
         CreateNet();

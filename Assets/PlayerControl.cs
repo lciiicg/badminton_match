@@ -1,8 +1,6 @@
 using UnityEngine;
 
 public enum PlayerSide { Left, Right }
-public enum SwingType { Drop, Clear, Smash }
-public enum ShotDirection { Left, Center, Right }
 
 public class StickmanController : MonoBehaviour
 {
@@ -11,9 +9,9 @@ public class StickmanController : MonoBehaviour
     public bool right_hit;
     public bool if_even;
     public PlayerSide side;
-    public float moveSpeed = 3f;
-    public float swingSpeed = 400f;
-    public float maxSwingAngle = 120f;
+    public float moveSpeed;
+    public float swingSpeed;
+    public float maxSwingAngle;
 
     StickmanBuilder builder;
     Transform racket;
@@ -21,12 +19,12 @@ public class StickmanController : MonoBehaviour
     bool isSwinging;
     float swing;
 
-    public float longPressTime = 0.4f;
-    public float doubleClickInterval = 0.25f;
+    public float longPressTime;
+    public float doubleClickInterval;
     // 右玩家击球键
-    KeyCode[] rightSwingKeys = { KeyCode.Alpha8, KeyCode.Alpha9, KeyCode.Alpha0 };
-    // 左玩家击球键（可改）
-    KeyCode[] leftSwingKeys = { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3 };
+    KeyCode[] rightSwingKeys = { KeyCode.O};
+    // 左玩家击球键
+    KeyCode[] leftSwingKeys = { KeyCode.Q};
 
     KeyCode[] swingKeys;
     KeyCode lastKey = KeyCode.None;
@@ -35,11 +33,9 @@ public class StickmanController : MonoBehaviour
     float lastKeyUpTime;
 
     public Vector3 PlayerPosition => transform.position;
-    public SwingType CurrentSwingType { get; private set; }
-    public ShotDirection CurrentDirection { get; private set; }
 
-    float courtLength = 13.4f;
-    float courtWidth = 6.1f;
+    float courtLength;
+    float courtWidth;
 
     // 并在 Start() 方法中添加初始化：
     void Start()
@@ -47,17 +43,25 @@ public class StickmanController : MonoBehaviour
         builder = GetComponent<StickmanBuilder>();
         racket = builder.racketRoot;
         swingKeys = (side == PlayerSide.Right) ? rightSwingKeys : leftSwingKeys;
+
+        moveSpeed = gameSystem.PlayerMoveSpeed;
+        swingSpeed = gameSystem.SwingSpeed;
+        maxSwingAngle = gameSystem.MaxSwingAngle;
+
+        courtLength = gameSystem.courtLength;
+        courtWidth = gameSystem.courtWidth;
+
         if (gameSystem == null) gameSystem = FindObjectOfType<GameManager>();
         if (gameSystem != null)
         {
             left_hit = gameSystem.left_hit;
             right_hit = gameSystem.right_hit;
-            Debug.Log($"0:left_hit: {left_hit}, right_hit: {right_hit}");
         }
         else
         {
             Debug.LogError("GameManager not found");
         }
+        if_even = gameSystem.if_even;
     }
 
     void Update()
@@ -94,7 +98,7 @@ public class StickmanController : MonoBehaviour
         {
             left_hit = gameSystem.left_hit;
             right_hit = gameSystem.right_hit;
-            if_even = gameSystem.even;
+            if_even = gameSystem.if_even;
             //Debug.Log($"left_hit: {left_hit}");
             //Debug.Log($"right_hit: {right_hit}");
         }
@@ -135,13 +139,13 @@ public class StickmanController : MonoBehaviour
             // 左双右单
             if (if_even)
             {
-                maxZ = 0;
-                minZ = -(courtWidth / 2 - 0.46f);
+                maxZ = side == PlayerSide.Left ? (courtWidth / 2 - 0.46f) : 0;
+                minZ = side == PlayerSide.Left ? 0 : -(courtWidth / 2 - 0.46f);
             }
             else
             {
-                maxZ = (courtWidth / 2 - 0.46f);
-                minZ = 0;
+                maxZ = side == PlayerSide.Left ? 0 : (courtWidth / 2 - 0.46f);
+                minZ = side == PlayerSide.Left ? -(courtWidth / 2 - 0.46f) : 0;
             }
         }
 
@@ -152,73 +156,23 @@ public class StickmanController : MonoBehaviour
         );
     }
 
-    ShotDirection GetDirectionByKey(KeyCode key)
-    {
-        if (side == PlayerSide.Right)
-        {
-            if (key == KeyCode.Alpha8) return ShotDirection.Left;
-            if (key == KeyCode.Alpha9) return ShotDirection.Center;
-            return ShotDirection.Right;
-        }
-        else
-        {
-            if (key == KeyCode.LeftArrow) return ShotDirection.Left;
-            if (key == KeyCode.Space) return ShotDirection.Center;
-            return ShotDirection.Right;
-        }
-    }
+
     void ResetKeyState()
     {
         keyPressed = false;
         lastKey = KeyCode.None;
     }
 
-    void StartSwing(SwingType type, ShotDirection dir)
+    void StartSwing()
     {
         if (isSwinging) return;
 
         isSwinging = true;
-        CurrentSwingType = type;
-        CurrentDirection = dir;
     }
 
-    void FireShot(SwingType type, ShotDirection dir)
-    {
-        StartSwing(type, dir);
-    }
     void HandleSwing()
     {
-        foreach (KeyCode key in swingKeys)
-        {
-            if (Input.GetKeyDown(key))
-            {
-                keyPressed = true;
-                keyDownTime = Time.time;
-                lastKey = key;
-            }
-
-            if (keyPressed && Input.GetKey(lastKey))
-            {
-                if (Time.time - keyDownTime >= longPressTime)
-                {
-                    FireShot(SwingType.Smash, GetDirectionByKey(lastKey));
-                    ResetKeyState();
-                }
-            }
-
-            if (keyPressed && Input.GetKeyUp(lastKey))
-            {
-                float t = Time.time - keyDownTime;
-
-                if (t < doubleClickInterval && Time.time - lastKeyUpTime <= doubleClickInterval)
-                    FireShot(SwingType.Clear, GetDirectionByKey(lastKey));
-                else if (t < longPressTime)
-                    FireShot(SwingType.Drop, GetDirectionByKey(lastKey));
-
-                lastKeyUpTime = Time.time;
-                ResetKeyState();
-            }
-        }
+        foreach()
 
         // ===== 挥拍动画 =====
         if (isSwinging)

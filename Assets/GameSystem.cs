@@ -4,16 +4,44 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    // ===== 玩家对象 =====
+    public float PlayerMoveSpeed = 3f;
+    public float SwingSpeed = 400f;
+    public float MaxSwingAngle = 120f;
+    public float longPressTime = 0.4f;
+    public float doubleClickInterval = 0.25f;
+
     public StickmanController LeftPlayer;
     public StickmanController RightPlayer;
+    public Vector3 leftPlayerPos;
+    public Vector3 rightPlayerPos;
+    public SwingType leftPlayerSwingType;
+    public SwingType rightPlayerSwingType;
+    public ShotDirection leftShotDirection;
+    public ShotDirection rightShotDirection;
 
+    // ===== 场地尺寸 =====
+    public float netHeight = 1.55f;
+    public float courtLength = 13.4f;
+    public float courtWidth = 6.1f;
+
+    // ===== 比分 =====
     public int left_score;
     public int right_score;
     public int top_score = 21;
 
+    // ===== 击球状态 =====
     public bool left_hit;
     public bool right_hit;
-    public bool even;
+    public bool if_even;
+
+    //球速
+    public float baseShuttlecockSpeed = 1f;
+    public float dropSpeedRate = 0.98f;  // 吊球减速倍率
+    public float clearSpeedRate = 1.02f; // 高远球加速倍率
+    public float smashSpeedRate = 2.0f;  // 扣杀球加速倍率
+
+
 
     // ===== UI =====
     TextMeshProUGUI leftScoreText;
@@ -22,11 +50,22 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        left_hit = true;
+        if (Random.value > 0.5f)
+        {
+            right_hit = true;
+            left_hit = false;
+        }
+        else
+        {
+            left_hit = true;
+            right_hit = false;
+        }
+
+        left_hit = false;
         right_hit = false;
         left_score = 0;
         right_score = 0;
-        even = true;
+        if_even = true;
 
         CreateScoreBoard();
     }
@@ -36,7 +75,13 @@ public class GameManager : MonoBehaviour
         // 实时刷新比分
         leftScoreText.text = left_score.ToString();
         rightScoreText.text = right_score.ToString();
-    }
+        leftPlayerPos = LeftPlayer.PlayerPosition;
+        rightPlayerPos = RightPlayer.PlayerPosition;
+        leftPlayerSwingType = LeftPlayer.CurrentSwingType;
+        rightPlayerSwingType = RightPlayer.CurrentSwingType;
+        leftShotDirection = LeftPlayer.CurrentDirection;
+        rightShotDirection = RightPlayer.CurrentDirection;
+}
 
     // =====================================================
     // 创建“比赛转播风格”计分板
@@ -120,12 +165,12 @@ public class GameManager : MonoBehaviour
     public void LeftPlayerScore()
     {
         left_score++;
-        even = (left_score + right_score) % 2 == 0;
+        if_even = (left_score + right_score) % 2 == 0;
     }
 
     public void RightPlayerScore()
     {
         right_score++;
-        even = (left_score + right_score) % 2 == 0;
+        if_even = (left_score + right_score) % 2 == 0;
     }
 }

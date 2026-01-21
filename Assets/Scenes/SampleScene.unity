@@ -166,14 +166,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e82de1227f146e74d8bca25ff2c2a9b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlayerMoveSpeed: 3
+  SwingSpeed: 400
+  MaxSwingAngle: 120
+  longPressTime: 0.4
+  doubleClickInterval: 0.25
   LeftPlayer: {fileID: 1737060005}
   RightPlayer: {fileID: 711618638}
+  leftPlayerPos: {x: 0, y: 0, z: 0}
+  rightPlayerPos: {x: 0, y: 0, z: 0}
+  leftPlayerSwingType: 0
+  rightPlayerSwingType: 0
+  leftShotDirection: 0
+  rightShotDirection: 0
+  netHeight: 1.55
+  courtLength: 13.4
+  courtWidth: 6.1
   left_score: 0
   right_score: 0
   top_score: 21
   left_hit: 0
   right_hit: 0
-  even: 1
+  if_even: 0
+  shuttlecockSpeed: 1
+  dropSpeedRate: 0.98
+  clearSpeedRate: 1.02
+  smashSpeedRate: 2
 --- !u!1 &551578292
 GameObject:
   m_ObjectHideFlags: 0
@@ -293,7 +311,7 @@ Transform:
   m_GameObject: {fileID: 711618634}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -469,7 +487,7 @@ Transform:
   m_GameObject: {fileID: 1737060000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -521,6 +539,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1848138787}
+  - component: {fileID: 1848138789}
   - component: {fileID: 1848138788}
   m_Layer: 0
   m_Name: Shuttlecock
@@ -560,6 +579,19 @@ MonoBehaviour:
   cylinderHeight: 0.045
   coneRadius: 0.108
   coneHeight: 0.27
+--- !u!114 &1848138789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848138786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e896185def3eb8f44ab1e8c38d6aaf0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameManager: {fileID: 319796185}
 --- !u!1 &2049577088
 GameObject:
   m_ObjectHideFlags: 0
@@ -589,6 +621,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65032d0646e4f344b89263fed5a2b8cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameManager: {fileID: 319796185}
+  courtLength: 0
+  courtWidth: 0
+  netHeight: 0
 --- !u!4 &2049577090
 Transform:
   m_ObjectHideFlags: 0
