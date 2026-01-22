@@ -20,8 +20,8 @@ public class GameManager : MonoBehaviour
 
     // ===== 比分 =====
     public Shuttlecock_Move Shuttlecock_move;
-    bool left_add_score;
-    bool right_add_score;
+    public bool left_add_score;
+    public bool right_add_score;
     public bool game_over;
     int left_score;
     int right_score;
@@ -80,15 +80,28 @@ public class GameManager : MonoBehaviour
         // 实时刷新比分
         left_add_score = Shuttlecock_move.left_add_score;
         right_add_score = Shuttlecock_move.right_add_score;
+
+        if (Shuttlecock_move.isFlying)
+        {
+            left_hit = false;
+            right_hit = false;
+        }
+
         if (left_add_score)
         {
             left_score += 1;
             if_left_even = !if_left_even;
+            left_hit = true;
+            right_hit = false;
+            left_add_score = false;
         }
         if (right_add_score)
         {
             right_score += 1;
             if_right_even = !if_right_even;
+            right_hit = true;
+            left_hit = false;
+            right_add_score = false;
         }
 
         leftScoreText.text = left_score.ToString();

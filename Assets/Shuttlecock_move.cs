@@ -36,7 +36,7 @@ public class Shuttlecock_Move : MonoBehaviour
 
     //上次击球方
     int next_player;
-    bool isFlying = false;
+    public bool isFlying = false;
     public bool left_add_score = false;
     public bool right_add_score = false;
     bool game_over;
@@ -45,7 +45,6 @@ public class Shuttlecock_Move : MonoBehaviour
     //模拟飞行参数
     float baseShuttlecockSpeed;
     float hitDistanceThreshold; // 击球判定距离阈值
-    float vHorizontal;            // 水平速度 m/s
     float g;                   // 重力加速度
 
     /// <summary>
@@ -56,10 +55,10 @@ public class Shuttlecock_Move : MonoBehaviour
     /// <param name="shuttlePos">当前羽毛球位置</param>
     /// <param name="opponentPos">对面球员位置（用于重新计算落点）</param>
     /// <returns>返回true表示球已经落地，false表示球仍在空中</returns>
-    public bool HandleShuttlecockHit(Vector3 receiverPos, bool swing, Vector3 shuttlePos, Vector3 opponentPos)
+    public void HandleShuttlecockHit(Vector3 receiverPos, bool swing, Vector3 shuttlePos, Vector3 opponentPos)
     {
         // 1. 球已落地
-        if (shuttlePos.y <= 0f)
+        if (shuttlePos.y <= 0.05f)
         {
             // 判断落点在左场还是右场
             bool landedRight = shuttlePos.x > 0f;
@@ -67,21 +66,26 @@ public class Shuttlecock_Move : MonoBehaviour
             { 
                 right_add_score = false;
                 left_add_score = true;
-                left_hit = true;
+                //left_hit = true;
+                isFlying = false;
                 Debug.Log("球已落地, 在右场: " + landedRight); 
+
             }
             if (!landedRight)
             { 
                 left_add_score = false;
                 right_add_score = true;
-                right_hit = true;
-                Debug.Log("球已落地, 在左场: " + landedRight);
+                //right_hit = true;
+                isFlying = false;
+                Debug.Log("球已落地, 在左场: " + !landedRight);
             }
         }
 
         // 2. 计算接球方与球的水平距离
         Vector3 horizontalDisplacement = new Vector3(shuttlePos.x - receiverPos.x, 0, shuttlePos.z - receiverPos.z);
         float distance = horizontalDisplacement.magnitude;
+
+        Debug.Log("距离" + distance);
 
         // 3. 球未落地前的击打判定
         if (distance <= hitDistanceThreshold && swing)
@@ -93,11 +97,12 @@ public class Shuttlecock_Move : MonoBehaviour
             Vector3 newEndPos = CalculateTargetPoint(opponentPos); // 使用前面封装的落点函数
             // 重新模拟飞行
             StopAllCoroutines();
-            StartCoroutine(SimulateShuttlecockFlight(shuttlePos, newEndPos, vHorizontal, g));
+            Debug.Log("起点" + shuttlePos + "落点" + newEndPos);
+            StartCoroutine(SimulateShuttlecockFlight(shuttlePos, newEndPos, baseShuttlecockSpeed, g));
 
             next_player = (next_player == 0) ? 1 : 0; // 切换接球方
 
-            return false; // 球仍在空中
+            isFlying = true; // 球仍在空中
         }
         else
         {
@@ -106,7 +111,6 @@ public class Shuttlecock_Move : MonoBehaviour
                 Debug.Log("击打失败：未处于挥拍有效期");
             else if (distance > hitDistanceThreshold && swing)
                 Debug.Log("击打失败：距离过远");
-            return false;
         }
     }
 
@@ -127,13 +131,14 @@ public class Shuttlecock_Move : MonoBehaviour
         Vector3 horizontalDir = horizontalDisplacement.normalized;
 
         // 2. 总飞行时间
+        Debug.Log("水平距离: " + horizontalDistance + "米" + "速度");
         float totalTime = horizontalDistance / vHorizontal;
         Debug.Log("总飞行时间: " + totalTime + "秒");
         
         // 3. 垂直初速度
         float y0 = startPos.y;
         float yf = endPos.y;
-        float Vy = g * totalTime * 0.5f;
+        float Vy = ((0.5f * g * totalTime * totalTime) - y0) / totalTime;
         Debug.Log("垂直初速度: " + Vy + "m/s");
 
         // 4. 飞行模拟
@@ -173,6 +178,7 @@ public class Shuttlecock_Move : MonoBehaviour
         right_hit = gameManager.right_hit;
         if_left_even = gameManager.if_left_even;
         if_right_even = gameManager.if_right_even;
+        hitDistanceThreshold = gameManager.hitDistanceThreshold;
 
         next_player = -1;
 
@@ -190,9 +196,11 @@ public class Shuttlecock_Move : MonoBehaviour
         isRightSwinging = gameManager.isRightSwinging;
         if_left_even = gameManager.if_left_even;
         if_right_even = gameManager.if_right_even;
+        left_add_score = gameManager.left_add_score;
+        right_add_score = gameManager.right_add_score;
 
         // 发球逻辑（只在球不飞时触发）
-        Debug.Log("isFlying: " + isFlying + ", left_hit: " + left_hit + ", right_hit: " + right_hit);
+        //Debug.Log("isFlying: " + isFlying + ", left_hit: " + left_hit + ", right_hit: " + right_hit);
         //Debug.Log("Left Player Pos: " + leftPlayerPos + ", Right Player Pos: " + rightPlayerPos);
         if (!isFlying)
         {
@@ -212,13 +220,14 @@ public class Shuttlecock_Move : MonoBehaviour
         {
             Vector3 receiverPos = next_player == 0 ? leftPlayerPos : rightPlayerPos;
             bool swing = next_player == 0 ? isLeftSwinging : isRightSwinging;
-            Vector3 opponentPos = next_player == 0 ? rightPlayerPos : leftPlayerPos;
+            Vector3 opponentPos = transform.position;
 
-            bool landed = HandleShuttlecockHit(receiverPos, swing, transform.position, opponentPos);
-            if (landed)
+            Debug.Log("接球方位置" + receiverPos + "挥拍有效期" + swing + "出球方" + opponentPos);
+
+            HandleShuttlecockHit(receiverPos, swing, transform.position, opponentPos);
+            if (!isFlying)
             {
                 //球落地后重置
-               isFlying = false;
                 next_player = -1;
             }
         }
@@ -327,12 +336,18 @@ public class Shuttlecock_Move : MonoBehaviour
         shuttlecockPos = new Vector3(playerPos.x + (playerPos.x < 0 ? relativeDistance : -relativeDistance),
                                      relativeHeight, playerPos.z);
         transform.position = shuttlecockPos;
+        transform.rotation = playerPos.x < 0 ? Quaternion.Euler(0, 0, -90) : Quaternion.Euler(0, 0, 90);
+        Debug.Log("球员位置" + playerPos + "球位置" + shuttlecockPos);
 
-        //target_position = CalculateTargetPoint(shuttlecockPos);
-        //Debug.Log("球员位置" + playerPos + "球起点" + shuttlecockPos + "球落点: " + target_position);
-        //StartCoroutine(SimulateShuttlecockFlight(shuttlecockPos, target_position, baseShuttlecockSpeed, g));
-        //HandleShuttlecockHit()
-        //isFlying = true;
-        //this.next_player = nextPlayer;
+        bool isPlayerSwinging = playerPos.x < 0 ? isLeftSwinging : isRightSwinging;
+        if (isPlayerSwinging)
+        {
+            target_position = CalculateTargetPoint(shuttlecockPos);
+            //Debug.Log("球员位置" + playerPos + "球起点" + shuttlecockPos + "球落点: " + target_position);
+            StartCoroutine(SimulateShuttlecockFlight(shuttlecockPos, target_position, baseShuttlecockSpeed, g));
+            isFlying = true;
+            this.next_player = nextPlayer;
+        }
+
     }
 }

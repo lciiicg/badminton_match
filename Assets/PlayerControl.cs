@@ -52,7 +52,7 @@ public class StickmanController : MonoBehaviour
         moveSpeed = gameSystem.PlayerMoveSpeed;
         swingSpeed = gameSystem.SwingSpeed;
         maxSwingAngle = gameSystem.MaxSwingAngle;
-        Debug.Log($"maxSwingAngle: {maxSwingAngle}");
+        //Debug.Log($"maxSwingAngle: {maxSwingAngle}");
 
         courtLength = gameSystem.courtLength;
         courtWidth = gameSystem.courtWidth;
@@ -115,7 +115,7 @@ public class StickmanController : MonoBehaviour
         }
         if (!left_hit && !right_hit)
         {
-            Debug.Log($"1:left_hit: {left_hit}, right_hit: {right_hit}");
+            //Debug.Log($"1:left_hit: {left_hit}, right_hit: {right_hit}");
             minX = side == PlayerSide.Left ? -6.7f : 0f;
             maxX = side == PlayerSide.Left ? 0f : 6.7f;
             minZ = - (courtWidth / 2 - 0.46f);
@@ -124,7 +124,7 @@ public class StickmanController : MonoBehaviour
         if (left_hit && !right_hit)
         {
 
-            Debug.Log($"2:left_hit: {left_hit}, right_hit: {right_hit}");
+            //Debug.Log($"2:left_hit: {left_hit}, right_hit: {right_hit}");
             // 左球员发球
             minX = side == PlayerSide.Left ? -(courtLength / 2 - 0.76f) : 0f;
             maxX = side == PlayerSide.Left ? -1.98f : 6.7f;
@@ -143,7 +143,7 @@ public class StickmanController : MonoBehaviour
 
         if (!left_hit && right_hit)
         {
-            Debug.Log($"3:left_hit: {left_hit}, right_hit: {right_hit}");
+            //Debug.Log($"3:left_hit: {left_hit}, right_hit: {right_hit}");
             // 右球员发球
             minX = side == PlayerSide.Left ? -(courtLength / 2) : 1.98f;
             maxX = side == PlayerSide.Left ? 0 : (courtLength / 2 - 0.76f);
@@ -208,7 +208,7 @@ public class StickmanController : MonoBehaviour
         if (isSwinging)
         {
             swing += swingSpeed * Time.deltaTime;
-            Debug.Log($"swing: {swing}, maxSwingAngle: {maxSwingAngle}");
+            //Debug.Log($"swing: {swing}, maxSwingAngle: {maxSwingAngle}");
             float dir = (side == PlayerSide.Right) ? 1f : -1f;
             racket.localRotation = Quaternion.Euler(0, 0, -20 + swing * dir);
                 
