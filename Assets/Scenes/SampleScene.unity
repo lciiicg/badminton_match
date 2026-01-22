@@ -169,29 +169,23 @@ MonoBehaviour:
   PlayerMoveSpeed: 3
   SwingSpeed: 400
   MaxSwingAngle: 120
-  longPressTime: 0.4
-  doubleClickInterval: 0.25
   LeftPlayer: {fileID: 1737060005}
   RightPlayer: {fileID: 711618638}
-  leftPlayerPos: {x: 0, y: 0, z: 0}
-  rightPlayerPos: {x: 0, y: 0, z: 0}
-  leftPlayerSwingType: 0
-  rightPlayerSwingType: 0
-  leftShotDirection: 0
-  rightShotDirection: 0
   netHeight: 1.55
   courtLength: 13.4
   courtWidth: 6.1
-  left_score: 0
-  right_score: 0
-  top_score: 21
+  Shuttlecock_move: {fileID: 1848138789}
+  game_over: 0
   left_hit: 0
   right_hit: 0
-  if_even: 0
-  shuttlecockSpeed: 1
-  dropSpeedRate: 0.98
-  clearSpeedRate: 1.02
-  smashSpeedRate: 2
+  if_left_even: 0
+  if_right_even: 0
+  isLeftSwinging: 0
+  isRightSwinging: 0
+  baseShuttlecockSpeed: 2
+  hitDistanceThreshold: 0.5
+  vHorizontal: 4
+  g: 2
 --- !u!1 &551578292
 GameObject:
   m_ObjectHideFlags: 0
@@ -347,13 +341,12 @@ MonoBehaviour:
   gameSystem: {fileID: 319796185}
   left_hit: 0
   right_hit: 0
-  if_even: 0
   side: 1
   moveSpeed: 3
   swingSpeed: 400
-  maxSwingAngle: 120
-  longPressTime: 0.4
-  doubleClickInterval: 0.25
+  maxSwingAngle: 79
+  isSwinging: 0
+  swingActiveTime: 0.2
 --- !u!1 &1236218004
 GameObject:
   m_ObjectHideFlags: 0
@@ -523,13 +516,12 @@ MonoBehaviour:
   gameSystem: {fileID: 319796185}
   left_hit: 0
   right_hit: 0
-  if_even: 0
   side: 0
   moveSpeed: 3
   swingSpeed: 400
-  maxSwingAngle: 120
-  longPressTime: 0.4
-  doubleClickInterval: 0.25
+  maxSwingAngle: 79
+  isSwinging: 0
+  swingActiveTime: 0.2
 --- !u!1 &1848138786
 GameObject:
   m_ObjectHideFlags: 0
@@ -592,6 +584,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameManager: {fileID: 319796185}
+  LeftPlayer: {fileID: 1737060005}
+  RightPlayer: {fileID: 711618638}
+  xLeft: []
+  xRight: []
+  zPoints: []
+  left_add_score: 0
+  right_add_score: 0
 --- !u!1 &2049577088
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,7 +7,8 @@ public class StickmanController : MonoBehaviour
     public GameManager gameSystem;
     public bool left_hit;
     public bool right_hit;
-    public bool if_even;
+    bool if_left_even;
+    bool if_right_even;
     public PlayerSide side;
     public float moveSpeed;
     public float swingSpeed;
@@ -16,11 +17,11 @@ public class StickmanController : MonoBehaviour
     StickmanBuilder builder;
     Transform racket;
 
-    bool isSwinging;
+    public bool isSwinging;
+    float swingTimer;                // 挥拍剩余时间
+    public float swingActiveTime = 1f;   // 挥拍有效时长（秒）
     float swing;
 
-    public float longPressTime;
-    public float doubleClickInterval;
     // 右玩家击球键
     KeyCode[] rightSwingKeys = { KeyCode.O};
     // 左玩家击球键
@@ -37,16 +38,21 @@ public class StickmanController : MonoBehaviour
     float courtLength;
     float courtWidth;
 
+    bool game_over;
+
     // 并在 Start() 方法中添加初始化：
     void Start()
     {
         builder = GetComponent<StickmanBuilder>();
         racket = builder.racketRoot;
+
+        // 根据左右球员选择击球键
         swingKeys = (side == PlayerSide.Right) ? rightSwingKeys : leftSwingKeys;
 
         moveSpeed = gameSystem.PlayerMoveSpeed;
         swingSpeed = gameSystem.SwingSpeed;
         maxSwingAngle = gameSystem.MaxSwingAngle;
+        Debug.Log($"maxSwingAngle: {maxSwingAngle}");
 
         courtLength = gameSystem.courtLength;
         courtWidth = gameSystem.courtWidth;
@@ -56,18 +62,22 @@ public class StickmanController : MonoBehaviour
         {
             left_hit = gameSystem.left_hit;
             right_hit = gameSystem.right_hit;
+            if_left_even = gameSystem.if_left_even;
+            if_right_even = gameSystem.if_right_even;
         }
         else
         {
             Debug.LogError("GameManager not found");
         }
-        if_even = gameSystem.if_even;
     }
 
     void Update()
     {
-        HandleMovement();
-        HandleSwing();
+        if (!game_over)
+        {
+            HandleMovement();
+            HandleSwing();
+        }
     }
 
     void HandleMovement()
@@ -98,7 +108,8 @@ public class StickmanController : MonoBehaviour
         {
             left_hit = gameSystem.left_hit;
             right_hit = gameSystem.right_hit;
-            if_even = gameSystem.if_even;
+            if_left_even = gameSystem.if_left_even;
+            if_right_even = gameSystem.if_right_even;
             //Debug.Log($"left_hit: {left_hit}");
             //Debug.Log($"right_hit: {right_hit}");
         }
@@ -118,7 +129,7 @@ public class StickmanController : MonoBehaviour
             minX = side == PlayerSide.Left ? -(courtLength / 2 - 0.76f) : 0f;
             maxX = side == PlayerSide.Left ? -1.98f : 6.7f;
             // 左双右单
-            if (if_even)
+            if (if_left_even)
             {
                 maxZ = side == PlayerSide.Left ? (courtWidth / 2 - 0.46f) : 0;
                 minZ = side == PlayerSide.Left ? 0 : -(courtWidth / 2 - 0.46f);
@@ -137,7 +148,7 @@ public class StickmanController : MonoBehaviour
             minX = side == PlayerSide.Left ? -(courtLength / 2) : 1.98f;
             maxX = side == PlayerSide.Left ? 0 : (courtLength / 2 - 0.76f);
             // 左双右单
-            if (if_even)
+            if (if_right_even)
             {
                 maxZ = side == PlayerSide.Left ? (courtWidth / 2 - 0.46f) : 0;
                 minZ = side == PlayerSide.Left ? 0 : -(courtWidth / 2 - 0.46f);
@@ -155,40 +166,59 @@ public class StickmanController : MonoBehaviour
             Mathf.Clamp(transform.position.z, minZ, maxZ)
         );
     }
-
-
-    void ResetKeyState()
-    {
-        keyPressed = false;
-        lastKey = KeyCode.None;
-    }
-
     void StartSwing()
     {
+        // 如果已经在挥拍有效期内，不重复触发
         if (isSwinging) return;
 
         isSwinging = true;
+        swingTimer = swingActiveTime;   // 重置挥拍有效时间
     }
+
 
     void HandleSwing()
     {
-        foreach()
 
-        // ===== 挥拍动画 =====
-        if (isSwinging)
+        if (!isSwinging)
         {
-            swing += swingSpeed * Time.deltaTime;
-
-            float dir = (side == PlayerSide.Right) ? 1f : -1f; // 右手+1，左手-1
-            racket.localRotation = Quaternion.Euler(0, 0, -20 + swing * dir);
-
-            if (swing >= maxSwingAngle)
+            // === 监听击球键（左 Q / 右 O）===
+            foreach (KeyCode key in swingKeys)
             {
-                isSwinging = false;
-                swing = 0;
-                racket.localRotation = Quaternion.Euler(20*dir, 0, 20 * dir);
+                if (Input.GetKeyDown(key))
+                {
+                    StartSwing();
+                    break;
+                }
             }
         }
 
+        // === 挥拍有效时间倒计时 ===
+        if (isSwinging)
+        {
+            swingTimer -= Time.deltaTime;
+            if (swingTimer <= 0f)
+            {
+                isSwinging = false;
+                swingTimer = 0f;
+                swing = 0f;   // 顺手重置，防止下次残留
+            }
+        }
+
+            // === 挥拍动画（和有效期同步）===
+        if (isSwinging)
+        {
+            swing += swingSpeed * Time.deltaTime;
+            Debug.Log($"swing: {swing}, maxSwingAngle: {maxSwingAngle}");
+            float dir = (side == PlayerSide.Right) ? 1f : -1f;
+            racket.localRotation = Quaternion.Euler(0, 0, -20 + swing * dir);
+                
+
+            if (swing >= maxSwingAngle)
+            {
+                swing = 0f;
+                racket.localRotation = Quaternion.Euler(20 * dir, 0, 20 * dir);
+            }
+        }
     }
+
 }

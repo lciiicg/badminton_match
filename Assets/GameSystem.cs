@@ -7,18 +7,11 @@ public class GameManager : MonoBehaviour
     // ===== 玩家对象 =====
     public float PlayerMoveSpeed = 3f;
     public float SwingSpeed = 400f;
-    public float MaxSwingAngle = 120f;
-    public float longPressTime = 0.4f;
-    public float doubleClickInterval = 0.25f;
+    public float MaxSwingAngle = 79f;
 
     public StickmanController LeftPlayer;
     public StickmanController RightPlayer;
-    public Vector3 leftPlayerPos;
-    public Vector3 rightPlayerPos;
-    public SwingType leftPlayerSwingType;
-    public SwingType rightPlayerSwingType;
-    public ShotDirection leftShotDirection;
-    public ShotDirection rightShotDirection;
+
 
     // ===== 场地尺寸 =====
     public float netHeight = 1.55f;
@@ -26,21 +19,28 @@ public class GameManager : MonoBehaviour
     public float courtWidth = 6.1f;
 
     // ===== 比分 =====
-    public int left_score;
-    public int right_score;
-    public int top_score = 21;
+    public Shuttlecock_Move Shuttlecock_move;
+    bool left_add_score;
+    bool right_add_score;
+    public bool game_over;
+    int left_score;
+    int right_score;
+    int top_score = 21;
+
 
     // ===== 击球状态 =====
     public bool left_hit;
     public bool right_hit;
-    public bool if_even;
+    public bool if_left_even;
+    public bool if_right_even;
+    public bool isLeftSwinging;
+    public bool isRightSwinging;
 
-    //球速
-    public float baseShuttlecockSpeed = 1f;
-    public float dropSpeedRate = 0.98f;  // 吊球减速倍率
-    public float clearSpeedRate = 1.02f; // 高远球加速倍率
-    public float smashSpeedRate = 2.0f;  // 扣杀球加速倍率
-
+    //模拟飞行
+    public float baseShuttlecockSpeed = 0.4f;
+    public float hitDistanceThreshold = 0.5f; // 击球判定距离阈值
+    public float vHorizontal = 4f;            // 水平速度 m/s
+    public float g = 9.81f;                   // 重力加速度
 
 
     // ===== UI =====
@@ -61,27 +61,53 @@ public class GameManager : MonoBehaviour
             right_hit = false;
         }
 
-        left_hit = false;
-        right_hit = false;
+        MaxSwingAngle = 79f;
+
         left_score = 0;
         right_score = 0;
-        if_even = true;
+        if_left_even = true;
+        if_right_even = true;
+        game_over = false;
 
         CreateScoreBoard();
     }
 
     void Update()
     {
+        isLeftSwinging = LeftPlayer.isSwinging;
+        isRightSwinging = RightPlayer.isSwinging;
+
         // 实时刷新比分
+        left_add_score = Shuttlecock_move.left_add_score;
+        right_add_score = Shuttlecock_move.right_add_score;
+        if (left_add_score)
+        {
+            left_score += 1;
+            if_left_even = !if_left_even;
+        }
+        if (right_add_score)
+        {
+            right_score += 1;
+            if_right_even = !if_right_even;
+        }
+
         leftScoreText.text = left_score.ToString();
         rightScoreText.text = right_score.ToString();
-        leftPlayerPos = LeftPlayer.PlayerPosition;
-        rightPlayerPos = RightPlayer.PlayerPosition;
-        leftPlayerSwingType = LeftPlayer.CurrentSwingType;
-        rightPlayerSwingType = RightPlayer.CurrentSwingType;
-        leftShotDirection = LeftPlayer.CurrentDirection;
-        rightShotDirection = RightPlayer.CurrentDirection;
-}
+        // 检查是否有玩家达到胜利分数
+        if (!game_over && (left_score >= top_score || right_score >= top_score))
+        {
+            game_over = true;
+            Debug.Log("Game Over!");
+            if (left_score > right_score)
+            {
+                Debug.Log("Left Player Wins!");
+            }
+            else
+            {
+                Debug.Log("Right Player Wins!");
+            }
+        }
+    }
 
     // =====================================================
     // 创建“比赛转播风格”计分板
@@ -159,18 +185,5 @@ public class GameManager : MonoBehaviour
         tmp.text = "0";
 
         return tmp;
-    }
-
-    // ================== 对外加分接口 ==================
-    public void LeftPlayerScore()
-    {
-        left_score++;
-        if_even = (left_score + right_score) % 2 == 0;
-    }
-
-    public void RightPlayerScore()
-    {
-        right_score++;
-        if_even = (left_score + right_score) % 2 == 0;
     }
 }
